@@ -6,6 +6,8 @@ import {
   InvokeModelCommand,
 } from "@aws-sdk/client-bedrock-runtime";
 
+const AWS_REGION = "us-east-1";
+
 function getEncoders() {
   return new Promise<string | undefined>((resolve, reject) => {
     ffmpeg.getAvailableEncoders((err, encoders) => {
@@ -32,7 +34,7 @@ async function invokeModel(
   modelId = "anthropic.claude-3-sonnet-20240229-v1:0",
 ) {
   // Create a new Bedrock Runtime client instance.
-  const client = new BedrockRuntimeClient({ region: "us-east-1" });
+  const client = new BedrockRuntimeClient({ region: AWS_REGION });
 
   // Prepare the payload for the model.
   const payload = {
@@ -60,8 +62,8 @@ async function invokeModel(
   return responseBody.content[0].text;
 }
 
-export async function GET(request: Request) { 
-  const client = new S3Client({ region: "us-east-1" });
+export async function POST(request: Request) { 
+  const client = new S3Client({ region: AWS_REGION });
   const videoName = "sample_video.mov"
   const bucketName = Bucket.UploadedVideos.bucketName
   const params = {
@@ -79,6 +81,6 @@ export async function GET(request: Request) {
   console.log({ result })
 
   return Response.json({ 
-    encoders: await getEncoders()
+    url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
   });
 }
