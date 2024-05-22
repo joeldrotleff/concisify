@@ -3,6 +3,8 @@ V1:
 - [-] Get transcript from OpenAI Whisper
 - [-] Get bracketed transcript from Claude Sonnet
 - [-] 
+- [-] NextJS chops out unnecessary bits of video and plays it
+- [-] 
 
 V2:
 - [-] Load video from AWS bucket
