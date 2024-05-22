@@ -13,16 +13,19 @@ export default {
     app.stack(function Site({ stack }) {
       // secrets:
       const LD_SDK_KEY = new Config.Secret(stack, "LD_SDK_KEY");
+      const OPENAI_API_KEY = new Config.Secret(stack, "OPENAI_API_KEY");
       
       // storage buckets:
       const uploadedVideosBucket = new Bucket(stack, "UploadedVideos");
 
       const site = new NextjsSite(stack, "site", {
-        bind: [LD_SDK_KEY, uploadedVideosBucket],
+        bind: [LD_SDK_KEY, OPENAI_API_KEY, uploadedVideosBucket],
         dev: {
           url: "http://localhost:3000"
         },
         permissions: ["bedrock:InvokeModel"],
+        memorySize: "1 GB",
+        timeout: "5 minutes",
       });
 
       stack.addOutputs({
