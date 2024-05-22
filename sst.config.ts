@@ -14,7 +14,10 @@ export default {
       const LD_SDK_KEY = new Config.Secret(stack, "LD_SDK_KEY");
 
       const site = new NextjsSite(stack, "site", {
-        bind: [LD_SDK_KEY]
+        bind: [LD_SDK_KEY],
+        dev: {
+          url: "http://localhost:3000"
+        }
       });
 
       stack.addOutputs({
