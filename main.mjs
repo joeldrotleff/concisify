@@ -15,7 +15,7 @@ async function transcribe(audioInput) {
     timestamp_granularities: ["word"]
   });
 
-  console.log("Transcription: ", transcription);
+  // console.log("Transcription: ", transcription);
 
   return transcription;
 }
@@ -79,15 +79,16 @@ async function getUnnecessaryParts(transcript) {
   prompt = prompt.replace("((REPLACE_ME_WITH_TRANSCRIPT))", transcript);
   const modelId = "anthropic.claude-3-sonnet-20240229-v1:0";
   // console.log(`Prompt: ${prompt}`);
-  console.log(`Model ID: ${modelId}`);
+  // console.log(`Model ID: ${modelId}`);
 
   try {
-    console.log("-".repeat(53));
+    // console.log("-".repeat(53));
     const response = await removeUnnecessaryPartsViaLLM(prompt, modelId);
 
-    console.log("\n" + "-".repeat(53));
-    console.log("Unnecessary parts removed successfully:");
-    console.log(response);
+    // console.log("\n" + "-".repeat(53));
+    // console.log("Unnecessary parts removed successfully:");
+    // console.log(response);
+    return response;
   } catch (err) {
     console.log(`\n${err}`);
   }
@@ -95,24 +96,74 @@ async function getUnnecessaryParts(transcript) {
 
 async function getSegmentsToKeep(bracketedTranscript, timestampedTranscript) {
   let prompt = fs.readFileSync("claude_prompt_get_stamps_to_keep.txt", "utf8");
-  console.log(' bracketedTranscript:', bracketedTranscript);
-  console.log(' timestampedTranscript:', timestampedTranscript);
+  // console.log(' bracketedTranscript:', bracketedTranscript);
+  // console.log(' timestampedTranscript:', timestampedTranscript);
   prompt = prompt.replace("((REPLACE_ME_WITH_BRACKETED))", bracketedTranscript);
   prompt = prompt.replace("((REPLACE_ME_WITH_TIMESTAMPED))", timestampedTranscript);
   const modelId = "anthropic.claude-3-sonnet-20240229-v1:0";
-  console.log(`Prompt: ${prompt}`);
-  console.log(`Model ID: ${modelId}`);
+  const response = await removeUnnecessaryPartsViaLLM(prompt, modelId);
+  // console.log(`Prompt: ${prompt}`);
+  // console.log(`Model ID: ${modelId}`);
 
   try {
-    console.log("-".repeat(53));
-    const response = await removeUnnecessaryPartsViaLLM(prompt, modelId);
-
-    console.log("\n" + "-".repeat(53));
-    console.log("Done getting segments to keep:");
     console.log(response);
+    return response;
   } catch (err) {
     console.log(`\n${err}`);
   }
+}
+
+// import ffmpeg from 'fluent-ffmpeg';
+
+/**
+ * 
+ * @param {string} inputVideo 
+ * @param {Array<Array<number>>} segmentsToKeep - array of arrays of timestamps to keep
+ * @param {string} outputVideo - the path for the output video
+ */
+function clipVideoFromSegments(inputVideo, segmentsToKeep, outputVideo) {
+  const tempFiles = [];
+
+  const createSegment = (start, end, index) => {
+    return new Promise((resolve, reject) => {
+      const tempFile = `temp_segment_${index}.mp4`;
+      tempFiles.push(tempFile);
+      ffmpeg(inputVideo)
+        .setStartTime(start)
+        .setDuration(end - start)
+        .output(tempFile)
+        .on('end', () => resolve())
+        .on('error', (err) => reject(err))
+        .run();
+    });
+  };
+
+  const mergeSegments = () => {
+    return new Promise((resolve, reject) => {
+      const mergedVideo = ffmpeg();
+      tempFiles.forEach(file => mergedVideo.input(file));
+      mergedVideo
+        .on('end', () => resolve())
+        .on('error', (err) => reject(err))
+        .mergeToFile(outputVideo);
+    });
+  };
+
+  (async () => {
+    try {
+      for (let i = 0; i < segmentsToKeep.length; i++) {
+        const [start, end] = segmentsToKeep[i];
+        await createSegment(start, end, i);
+      }
+      await mergeSegments();
+      console.log('Video processing complete');
+    } catch (error) {
+      console.error('Error processing video:', error);
+    } finally {
+      // Clean up temporary files
+      tempFiles.forEach(file => fs.unlinkSync(file));
+    }
+  })();
 }
 
 
@@ -125,10 +176,19 @@ try {
   console.log('Video converted to audio successfully');
   const transcript = await transcribe(audioFile);
   const transcriptText = transcript.text;
-  console.log('actual Transcript:', transcriptText);
+  console.log('done getting transcript');
+  // console.log('actual Transcript:', transcriptText);
   const unnecessaryParts = await getUnnecessaryParts(transcriptText);
-  const segmentsToKeep = await getSegmentsToKeep(unnecessaryParts, transcript.text_with_timestamps);
-  console.log(segmentsToKeep);
+  console.log('done getting unnecessary parts');
+  const transcriptAsString = JSON.stringify(transcript);
+  const segmentsToKeep = await getSegmentsToKeep(unnecessaryParts, transcriptAsString);
+  console.log('The type of segmentsToKeep:', typeof segmentsToKeep);
+  const segmentsToKeepAsObject = JSON.parse(segmentsToKeep);
+  const howManySegmentsToKeep = segmentsToKeepAsObject.result.length;
+  console.log('howManySegmentsToKeep:', howManySegmentsToKeep);
+
+  console.log('done getting segments to keep');
+  console.log('the segments to keep are:', segmentsToKeep);
 } catch (error) {
   console.error('Error converting video to audio:', error);
 }
