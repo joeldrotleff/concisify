@@ -1,6 +1,18 @@
+import dynamic from "next/dynamic";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
+
+// 1. Disable SSR
+// 2. Defer loading the Client component
+
+const AsyncLDProvider = dynamic(
+  () => import("@/app/components/AsyncWithLDProvider"),
+  {
+    ssr: false,
+  }
+);
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +28,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <Suspense>
+          <AsyncLDProvider> {children} </AsyncLDProvider>
+        </Suspense>
+      </body>
     </html>
   );
 }
