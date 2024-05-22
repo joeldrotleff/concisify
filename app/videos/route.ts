@@ -213,6 +213,15 @@ async function invokeModel(
 }
 
 export async function POST(request: Request) { 
+  const body = await request.json();
+
+  const conscisingStrength = body.concisingStrength;
+
+  if (!conscisingStrength) {
+    console.error('concisingStrength not provided in the request body');
+    return Response.error();
+  }
+
   const client = new S3Client({ region: AWS_REGION });
   const videoName = "sample_video.mov"
   const bucketName = Bucket.UploadedVideos.bucketName
@@ -222,16 +231,18 @@ export async function POST(request: Request) {
   }
   const command = new GetObjectCommand(params);
 
+  console.log('getting video from s3')
   const response = await client.send(command);
 
   const videoFilePath = await createTempFile(videoName);
+  console.log('writing video to temp file')
   await writeToFile(videoFilePath, await response.Body?.transformToByteArray() as Buffer);
 
-  console.log(response.ContentLength);
-
   const audioFilePath = await createTempFile(randomUUID() + ".mp3");
+  console.log('converting video to audio')
   await convertVideoToAudio(videoFilePath, audioFilePath);
 
+  console.log('getting transcript');
   const transcript = await transcribe(audioFilePath);
   const transcriptText = transcript.text;
   console.log('done getting transcript');
@@ -245,11 +256,12 @@ export async function POST(request: Request) {
   console.log('done getting segments to keep: ' + wantToKeepSegments);
   const resultingFileName = randomUUID() + "_output.mp4";
   const tempFolderPath = await createTempFolder('temp_merged_segments');
+  console.log('clipping video from segments');
   await clipVideoFromSegments(videoFilePath, wantToKeepSegments, resultingFileName, tempFolderPath);
 
+  console.log('reading resulting video from the temp folder');
   const resultingVideo = fs.readFileSync(path.join(tempFolderPath, resultingFileName));
 
-  console.log('done processing video');
   console.log('content length:', resultingVideo.length);
 
   return Response.json({ 

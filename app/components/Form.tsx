@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useFlags } from 'launchdarkly-react-client-sdk'
+
+const defultConcsisingStrength = 'High'
 
 export default function Form() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -8,6 +11,8 @@ export default function Form() {
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const [resultVideoURL, setResultVideoURL] = useState<string | null>(null)
+
+  const flags = useFlags();
 
   useEffect(() => {
     if (!videoFile) return;
@@ -34,7 +39,10 @@ export default function Form() {
       setIsProcessing(true)
 
       const result = await fetch("/videos", {
-        method: "POST"
+        method: "POST",
+        body: JSON.stringify({
+          concisingStrength: flags["concisingStrength"] ?? defultConcsisingStrength
+        })
       });
 
       const resultJSON = await result.json();

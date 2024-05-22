@@ -25,7 +25,7 @@ export default {
         },
         permissions: ["bedrock:InvokeModel"],
         memorySize: "1 GB",
-        timeout: "5 minutes",
+        timeout: "170 seconds",
       });
 
       stack.addOutputs({
