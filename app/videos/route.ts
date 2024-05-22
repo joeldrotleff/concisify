@@ -84,9 +84,9 @@ async function convertVideoToAudio(inputFilePath: string, outputFilePath: string
 async function getUnnecessaryParts(transcript: string, strength: string) {
   let prompt: string;
   if (strength === 'High') {
-    prompt = fs.readFileSync("claude_prompt_get_unnecessary_from_transcript_aggressive", "utf8");
+    prompt = fs.readFileSync("claude_prompt_get_unnecessary_from_transcript_aggressive.txt", "utf8");
   } else {
-    prompt = fs.readFileSync("claude_prompt_get_unnecessary_from_transcript", "utf8");
+    prompt = fs.readFileSync("claude_prompt_get_unnecessary_from_transcript.txt", "utf8");
   }
   prompt = prompt.replace("((REPLACE_ME_WITH_TRANSCRIPT))", transcript);
   const modelId = "anthropic.claude-3-sonnet-20240229-v1:0";
