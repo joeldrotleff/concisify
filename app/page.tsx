@@ -5,8 +5,6 @@ import Form from "@/app/components/Form";
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <h1>Concisify</h1>
-      
       <Form />
 {/* 
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">

@@ -1,7 +1,7 @@
 import ffmpeg from 'fluent-ffmpeg';
 import OpenAI from "openai";
 import { Bucket } from "sst/node/bucket";
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import {
   BedrockRuntimeClient,
   InvokeModelCommand,
@@ -133,7 +133,7 @@ async function getSegmentsToKeep(bracketedTranscript: string, timestampedTranscr
  * @param {Array<Array<number>>} segmentsToKeep - array of arrays of timestamps to keep
  * @param {string} outputVideo - the path for the output video
  */
-async function clipVideoFromSegments(inputVideoPath: string, segmentsToKeep: Array<Array<number>>, outputVideoFileName: string, outputVideoFolderPath: string) {
+async function clipVideoFromSegments(inputVideoPath: string, segmentsToKeep: Array<Array<number>>, outputVideoPath: string) {
   const tempFilePaths: string[] = [];
 
   const createSegment = async (start: number, end: number, index: number): Promise<void> => {
@@ -151,13 +151,14 @@ async function clipVideoFromSegments(inputVideoPath: string, segmentsToKeep: Arr
   };
 
   const mergeSegments = async (): Promise<void> => {
+    const tempFolderPath = await createTempFolder('temp_merged_segments');
     return new Promise((resolve, reject) => {
       const mergedVideo = ffmpeg();
       tempFilePaths.forEach(file => mergedVideo.input(file));
       mergedVideo
         .on('end', () => resolve())
         .on('error', (err) => reject(err))
-        .mergeToFile(outputVideoFileName, outputVideoFolderPath);
+        .mergeToFile(outputVideoPath, tempFolderPath);
     });
   };
 
@@ -220,9 +221,6 @@ async function invokeModel(
 export async function POST(request: Request) {
   const body = await request.json();
 
-
-
-
   const conscisingStrength = body.concisingStrength;
   if (!conscisingStrength) {
     console.error('concisingStrength not provided in the request body');
@@ -261,17 +259,31 @@ export async function POST(request: Request) {
   const segmentsToKeepResponse = await getSegmentsToKeep(unnecessaryParts, transcriptAsString);
   const wantToKeepSegments = JSON.parse(segmentsToKeepResponse).result;
   console.log('done getting segments to keep: ' + wantToKeepSegments);
-  const resultingFileName = randomUUID() + "_output.mp4";
-  const tempFolderPath = await createTempFolder('temp_merged_segments');
+  const resultingVideoFileName = randomUUID() + "_output.mp4";
+  const resultingVideoFilePath = await createTempFile(resultingVideoFileName);
   console.log('clipping video from segments');
-  await clipVideoFromSegments(videoFilePath, wantToKeepSegments, resultingFileName, tempFolderPath);
+  await clipVideoFromSegments(videoFilePath, wantToKeepSegments, resultingVideoFilePath);
 
   console.log('reading resulting video from the temp folder');
-  const resultingVideo = fs.readFileSync(path.join(tempFolderPath, resultingFileName));
+  const resultingVideo = fs.readFileSync(resultingVideoFilePath);
 
-  console.log('content length:', resultingVideo.length);
+  console.log("Making the resulting video available for download");
 
-  return Response.json({
-    url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+  console.log('uploading resulting video to s3');
+  const putParams = {
+    ACL: "public-read",
+    Bucket: bucketName,
+    Key: resultingVideoFileName,
+    Body: resultingVideo,
+    ContentType: 'video/mp4'
+  }
+  // @ts-expect-error
+  const putCommand = new PutObjectCommand(putParams);
+  await client.send(putCommand);
+
+  // return the public signed url of the video in the bucket
+  return new Response(JSON.stringify({ url: `https://${bucketName}.s3.amazonaws.com/${resultingVideoFileName}` }), {
+    headers: { 'Content-Type': 'application/json' }
   });
+
 }

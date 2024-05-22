@@ -16,7 +16,9 @@ export default {
       const OPENAI_API_KEY = new Config.Secret(stack, "OPENAI_API_KEY");
       
       // storage buckets:
-      const uploadedVideosBucket = new Bucket(stack, "UploadedVideos");
+      const uploadedVideosBucket = new Bucket(stack, "UploadedVideos", {
+        blockPublicACLs: false
+      });
 
       const site = new NextjsSite(stack, "site", {
         bind: [LD_SDK_KEY, OPENAI_API_KEY, uploadedVideosBucket],
@@ -25,7 +27,6 @@ export default {
         },
         permissions: ["bedrock:InvokeModel"],
         memorySize: "1 GB",
-        timeout: "170 seconds",
       });
 
       stack.addOutputs({
