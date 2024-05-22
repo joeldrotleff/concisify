@@ -3,7 +3,6 @@
 
 import { fileURLToPath } from "url";
 
-import { FoundationModels } from "../../config/foundation_models.js";
 import {
   BedrockRuntimeClient,
   InvokeModelCommand,
