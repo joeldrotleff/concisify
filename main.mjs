@@ -121,7 +121,7 @@ async function getSegmentsToKeep(bracketedTranscript, timestampedTranscript) {
  * @param {Array<Array<number>>} segmentsToKeep - array of arrays of timestamps to keep
  * @param {string} outputVideo - the path for the output video
  */
-function clipVideoFromSegments(inputVideo, segmentsToKeep, outputVideo) {
+async function clipVideoFromSegments(inputVideo, segmentsToKeep, outputVideo) {
   const tempFiles = [];
 
   const createSegment = (start, end, index) => {
@@ -149,21 +149,17 @@ function clipVideoFromSegments(inputVideo, segmentsToKeep, outputVideo) {
     });
   };
 
-  (async () => {
-    try {
-      for (let i = 0; i < segmentsToKeep.length; i++) {
-        const [start, end] = segmentsToKeep[i];
-        await createSegment(start, end, i);
-      }
-      await mergeSegments();
-      console.log('Video processing complete');
-    } catch (error) {
-      console.error('Error processing video:', error);
-    } finally {
-      // Clean up temporary files
-      tempFiles.forEach(file => fs.unlinkSync(file));
+  try {
+    for (let i = 0; i < segmentsToKeep.length; i++) {
+      const [start, end] = segmentsToKeep[i];
+      await createSegment(start, end, i);
     }
-  })();
+    await mergeSegments();
+    console.log('Video processing complete');
+  } catch (error) {
+    console.error('Error processing video:', error);
+  }
+  tempFiles.forEach(file => fs.unlinkSync(file));
 }
 
 
@@ -179,19 +175,26 @@ try {
   console.log('done getting transcript');
   // console.log('actual Transcript:', transcriptText);
   const unnecessaryParts = await getUnnecessaryParts(transcriptText);
-  console.log('done getting unnecessary parts');
+  console.log('done getting unnecessary parts: ' + unnecessaryParts);
   const transcriptAsString = JSON.stringify(transcript);
-  const segmentsToKeep = await getSegmentsToKeep(unnecessaryParts, transcriptAsString);
-  console.log('The type of segmentsToKeep:', typeof segmentsToKeep);
-  const segmentsToKeepAsObject = JSON.parse(segmentsToKeep);
-  const howManySegmentsToKeep = segmentsToKeepAsObject.result.length;
-  console.log('howManySegmentsToKeep:', howManySegmentsToKeep);
-
-  console.log('done getting segments to keep');
-  console.log('the segments to keep are:', segmentsToKeep);
+  const segmentsToKeepResponse = await getSegmentsToKeep(unnecessaryParts, transcriptAsString);
+  const wantToKeepSegments = JSON.parse(segmentsToKeepResponse).result;
+  console.log('done getting segments to keep: ' + wantToKeepSegments);
+  clipVideoFromSegments('sample_video.mov', wantToKeepSegments, 'output.mp4');
 } catch (error) {
   console.error('Error converting video to audio:', error);
 }
+
+/*
+
+const segmentsToKeepHere = [
+    [14.979999542236328, 19.100000381469727],
+    [21.520000457763672, 22.139999389648438]
+  ];
+
+clipVideoFromSegments('sample_video.mov', segmentsToKeepHere, 'output.mp4');
+
+*/
 
 
 
