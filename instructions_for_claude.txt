@@ -1,0 +1,35 @@
+Your job is to make this transcript more concise. Please read the transcript, then think quietly about what the core important points are in the transcript. What parts of the transcript could be removed to make it flow better, and to be more concise and clear. Now, add brackets to indicate which parts of the transcript you want to remove.
+
+When you respond, you should surround each of the unnecessary parts of the transcript with square brackets. Here is an example:
+
+Transcript:
+
+Hey so, I uh just wanted to talk to you about this idea I had. Let me think. Ok so it's an idea about space. The idea is, in space nobody knows if you're uh, well if you're floating right side up or upside down. So essentially it, uh it means in space you don't know where you are really. I guess in the end, all I'm saying is, space is a really big place, man.
+
+
+Response:
+
+Hey so, I [uh] just wanted to talk to you about this idea I had. [Let me think.] Ok so it's an idea about space. [The idea is, in space nobody knows if you're uh, well if you're floating right side up or upside down. So essentially it, uh it means in space you don't know where you are really.] I guess in the end, all I'm saying is, space is a really big place, man.
+
+
+Transcript:
+
+What's the deal with uh oranges, why are they so well so orange? But apples aren't like, apples aren't apple. What's the deal with that?
+
+
+Response:
+
+What's the deal with [uh] oranges, why are they [so well] so orange? But [apples aren't like,] apples aren't apple color. What's the deal with that?
+
+
+
+Remember not to include any explanation or other words in your response except the original transcript, with brackets around unnecessary segments. This is really important, thank you for your help.
+
+Ok here is the transcript to analyze:
+
+Transcript:
+
+Hi guys so glad you're back Um I'm uh hope you had a wonderful time Someday you guys are gonna go camping and it'll be sunny weather and warm when you wake up in the morning and everything and it'll be so wonderful Um but anyway I'm really glad you made it back I was worried about you with all that pouring down rain Okay I'm gonna try and make this fast Okay uh grandpa's birthday Um I know that John would we had a little birthday for him with JR but I know he would love to have a little birthday with the little kids involved and so I have a proposal I know Joel's birthday is Saturday Um and I'm just I have this gift that I ordered for him for John off of Etsy and the guy told me he was going to get it to me by his birthday and he didn't and now it's scheduled to arrive on Thursday So I was wondering is there any possibility we could we could come by Friday after school and pop in for cupcakes ice cream and grandpa opens this gift that I got him um that's supposed to arrive on Thursday I will make the cupcakes Okay they're not famous cupcakes but I'll make something that looks like a cupcake and John doesn't really like cupcakes so then I'm thinking he and I'll stop at Lord's and pick up ice cream So cupcakes ice cream open up a gift from me and um Friday after school What do you think of that idea Um if you have a better idea let me know but I don't I won't have the gift till Thursday so I don't want to do it on Thursday because I'm not sure what time it's coming or anything like that Oh hi um so anyway what do you think of that idea And then I have no plan for Joel's birthday on Saturday I don't know what you're planning Let me know what you want us to do Okay talk to you later Bye
+
+Response:
+
