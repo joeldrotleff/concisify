@@ -11,6 +11,8 @@ async function transcribe(audioInput) {
   const transcription = await openai.audio.transcriptions.create({
     file: fs.createReadStream(audioInput),
     model: "whisper-1",
+    response_format: "verbose_json",
+    timestamp_granularities: ["word"]
   });
 
   console.log("Transcription: ", transcription);
@@ -36,7 +38,7 @@ async function convertVideoToAudio(input, output) {
 const modelId = 'anthropic.claude-3-sonnet-20240229-v1:0';
 const anthropicVersion = 'bedrock-2023-05-31'
 
-export const invokeModel = async (
+export const removeUnnecessaryPartsViaLLM = async (
   prompt,
   modelId = modelId,
 ) => {
@@ -73,7 +75,7 @@ export const invokeModel = async (
 
 
 async function getUnnecessaryParts(transcript) {
-  let prompt = fs.readFileSync("instructions_for_claude.txt", "utf8");
+  let prompt = fs.readFileSync("claude_prompt_get_unnecessary_from_transcript.txt", "utf8");
   prompt = prompt.replace("((REPLACE_ME_WITH_TRANSCRIPT))", transcript);
   const modelId = "anthropic.claude-3-sonnet-20240229-v1:0";
   // console.log(`Prompt: ${prompt}`);
@@ -81,14 +83,38 @@ async function getUnnecessaryParts(transcript) {
 
   try {
     console.log("-".repeat(53));
-    const response = await invokeModel(prompt, modelId);
+    const response = await removeUnnecessaryPartsViaLLM(prompt, modelId);
+
     console.log("\n" + "-".repeat(53));
-    console.log("Final structured response:");
+    console.log("Unnecessary parts removed successfully:");
     console.log(response);
   } catch (err) {
     console.log(`\n${err}`);
   }
 }
+
+async function getSegmentsToKeep(bracketedTranscript, timestampedTranscript) {
+  let prompt = fs.readFileSync("claude_prompt_get_stamps_to_keep.txt", "utf8");
+  console.log(' bracketedTranscript:', bracketedTranscript);
+  console.log(' timestampedTranscript:', timestampedTranscript);
+  prompt = prompt.replace("((REPLACE_ME_WITH_BRACKETED))", bracketedTranscript);
+  prompt = prompt.replace("((REPLACE_ME_WITH_TIMESTAMPED))", timestampedTranscript);
+  const modelId = "anthropic.claude-3-sonnet-20240229-v1:0";
+  console.log(`Prompt: ${prompt}`);
+  console.log(`Model ID: ${modelId}`);
+
+  try {
+    console.log("-".repeat(53));
+    const response = await removeUnnecessaryPartsViaLLM(prompt, modelId);
+
+    console.log("\n" + "-".repeat(53));
+    console.log("Done getting segments to keep:");
+    console.log(response);
+  } catch (err) {
+    console.log(`\n${err}`);
+  }
+}
+
 
 
 // LETS GO!
@@ -101,6 +127,8 @@ try {
   const transcriptText = transcript.text;
   console.log('actual Transcript:', transcriptText);
   const unnecessaryParts = await getUnnecessaryParts(transcriptText);
+  const segmentsToKeep = await getSegmentsToKeep(unnecessaryParts, transcript.text_with_timestamps);
+  console.log(segmentsToKeep);
 } catch (error) {
   console.error('Error converting video to audio:', error);
 }

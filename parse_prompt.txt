@@ -1,0 +1,40 @@
+Write a js function that takes a transcript object, which contains a list of words, where each word is an object with a start and end property (a number representing the timestamp of that word when it was said in the video). 
+
+Another parameter is a modified transcript which has brackets i.e. [ and ] around all of the unnecessary parts.
+
+The function should return an array of the parts of the video which should be *kept* to eliminate the unnecessary parts. 
+
+For example, if the transcript is:
+
+```
+[
+  { start: 0, end: 1, text: 'Hello' },
+  { start: 1, end: 2, text: 'world' },
+  { start: 2, end: 3, text: 'this' },
+  { start: 3, end: 4, text: 'is' },
+  { start: 4, end: 5, text: 'a' },
+  { start: 5, end: 6, text: 'test' },
+  { start: 6, end: 7, text: 'video' },
+  { start: 7, end: 8, text: 'Did' },
+  { start: 8, end: 9, text: 'it' },
+  { start: 9, end: 10, text: 'work' },
+]
+```
+
+And the modifiedTranscript parameter indicates that "video" should be removed, i.e. modifiedTranscript = "Hello world this is a test [video]"
+
+Then the output should be:
+
+```
+[
+  { 0, 6 }, // "Hello world this is a test" segment
+  { 6, 10 }, // "Did it work" segment
+]
+```
+
+Let's call the function getNecessarySegments(transcript, modifiedTranscript).
+
+Please make sure to think carefully about edge cases, and also make sure not to make any syntax errors.
+
+Also please write a few tests.
+
