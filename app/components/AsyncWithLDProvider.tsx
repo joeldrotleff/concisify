@@ -3,7 +3,7 @@
 import { use } from "react";
 import { asyncWithLDProvider } from "launchdarkly-react-client-sdk";
 
-export default function AsyncLDProvider({ children }) {
+export default function AsyncLDProvider({ children }: { children: React.ReactNode }) {
  
   //  1. Call use() hook,
   //  2. Initialize LaunchDarkly SDK as usual
