@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useFlags } from 'launchdarkly-react-client-sdk'
 
-const defultConcsisingStrength = 'High'
+const defultConcsisingStrength = 'Low'
 
 export default function Form() {
   const [videoFile, setVideoFile] = useState<File | null>(null);

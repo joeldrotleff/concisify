@@ -81,8 +81,13 @@ async function convertVideoToAudio(inputFilePath: string, outputFilePath: string
 }
 
 
-async function getUnnecessaryParts(transcript: string) {
-  let prompt = fs.readFileSync("claude_prompt_get_unnecessary_from_transcript.txt", "utf8");
+async function getUnnecessaryParts(transcript: string, strength: string) {
+  let prompt: string;
+  if (strength === 'High') {
+    prompt = fs.readFileSync("claude_prompt_get_unnecessary_from_transcript_aggressive", "utf8");
+  } else {
+    prompt = fs.readFileSync("claude_prompt_get_unnecessary_from_transcript", "utf8");
+  }
   prompt = prompt.replace("((REPLACE_ME_WITH_TRANSCRIPT))", transcript);
   const modelId = "anthropic.claude-3-sonnet-20240229-v1:0";
   // console.log(`Prompt: ${prompt}`);
@@ -212,11 +217,13 @@ async function invokeModel(
   return responseBody.content[0].text;
 }
 
-export async function POST(request: Request) { 
+export async function POST(request: Request) {
   const body = await request.json();
 
-  const conscisingStrength = body.concisingStrength;
 
+
+
+  const conscisingStrength = body.concisingStrength;
   if (!conscisingStrength) {
     console.error('concisingStrength not provided in the request body');
     return Response.error();
@@ -248,7 +255,7 @@ export async function POST(request: Request) {
   console.log('done getting transcript');
   console.log('actual Transcript:', transcriptText);
 
-  const unnecessaryParts = await getUnnecessaryParts(transcriptText);
+  const unnecessaryParts = await getUnnecessaryParts(transcriptText, conscisingStrength); 
   console.log('done getting unnecessary parts: ' + unnecessaryParts);
   const transcriptAsString = JSON.stringify(transcript);
   const segmentsToKeepResponse = await getSegmentsToKeep(unnecessaryParts, transcriptAsString);
@@ -264,7 +271,7 @@ export async function POST(request: Request) {
 
   console.log('content length:', resultingVideo.length);
 
-  return Response.json({ 
+  return Response.json({
     url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
   });
 }
