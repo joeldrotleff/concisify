@@ -1,1 +1,5 @@
-Concisify takes an input video (i.e. of a person talking), generates a transcript of the video via Whisper, then asks Anthropic Claude to indicate which parts of the video should be cut out (i.e. which are the unimportant, "filler" parts of the video). It then uses ffmpeg to cut out the unnecessary video parts and produce an output video file which is shown in the front end NextJS UI.
+## Concisify: AI filler-word remover
+
+Hackathon project to remove filler words from a video. Gets timestamps of filler words from Whisper API transcript, then cuts them out using ffmpeg running in AWS.
+
+This was done for the DeveloperWeek AI/ML 2024 Hackathon
